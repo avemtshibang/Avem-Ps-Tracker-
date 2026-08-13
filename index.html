@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AVEM PS Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f4f7;
+      color: #111;
+      text-align: center;
+    }
+
+    header {
+      background: #111;
+      color: white;
+      padding: 25px 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      opacity: 0.8;
+    }
+
+    .container {
+      padding: 25px 18px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .number {
+      font-size: 60px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .label {
+      color: #666;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 15px;
+      padding: 17px;
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .match {
+      background: #111;
+      color: white;
+    }
+
+    .reset {
+      background: #e9ecef;
+      color: #111;
+    }
+
+    .history {
+      text-align: left;
+    }
+
+    .history-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🎮 AVEM PS TRACKER</h1>
+    <p>Suivi de tes matchs</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <div class="label">MATCHS AUJOURD'HUI</div>
+      <div class="number" id="matchCount">0</div>
+
+      <button class="match" onclick="addMatch()">
+        ➕ MATCH TERMINÉ
+      </button>
+
+      <button class="reset" onclick="resetToday()">
+        🔄 Réinitialiser aujourd'hui
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="label">HISTORIQUE</div>
+
+      <div class="history" id="history">
+        Aucun match enregistré.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+
+    let matches = JSON.parse(localStorage.getItem("avemMatches")) || {};
+
+    function getToday() {
+      const date = new Date();
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
+    function addMatch() {
+
+      const today = getToday();
+
+      if (!matches[today]) {
+        matches[today] = [];
+      }
+
+      const now = new Date();
+
+      matches[today].push({
+        time: now.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      });
+
+      saveData();
+      updateScreen();
+    }
+
+    function resetToday() {
+
+      const today = getToday();
+
+      if (confirm("Voulez-vous supprimer les matchs d'aujourd'hui ?")) {
+        delete matches[today];
+
+        saveData();
+        updateScreen();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem("avemMatches", JSON.stringify(matches));
+    }
+
+    function updateScreen() {
+
+      const today = getToday();
+
+      const todayMatches = matches[today] || [];
+
+      document.getElementById("matchCount").textContent =
+        todayMatches.length;
+
+      const history = document.getElementById("history");
+
+      if (Object.keys(matches).length === 0) {
+        history.innerHTML = "Aucun match enregistré.";
+        return;
+      }
+
+      history.innerHTML = "";
+
+      Object.keys(matches)
+        .sort()
+        .reverse()
+        .forEach(date => {
+
+          const item = document.createElement("div");
+
+          item.className = "history-item";
+
+          item.innerHTML =
+            "<strong>📅 " + date + "</strong><br>" +
+            "🎮 " + matches[date].length + " match(s)";
+
+          history.appendChild(item);
+        });
+    }
+
+    updateScreen();
+
+  </script>
+
+</body>
+</html>
