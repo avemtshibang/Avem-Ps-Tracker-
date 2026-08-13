@@ -443,6 +443,7 @@ video.addEventListener(
 function() {
 
 analysing = false;
+  stopFrameAnalysis();
 avemFinishMatch();
 detectorState.textContent =
 "🟢 ANALYSE TERMINÉE";
@@ -642,6 +643,52 @@ function updateDashboard() {
   });
 
   history.innerHTML = html;
+}
+  // ==========================================
+// AVEM - ANALYSE DES IMAGES VIDÉO
+// ==========================================
+
+let avemFrameTimer = null;
+
+function startFrameAnalysis() {
+
+  if (!video.src) {
+    return;
+  }
+
+  if (avemFrameTimer) {
+    clearInterval(avemFrameTimer);
+  }
+
+  avemFrameTimer = setInterval(function() {
+
+    if (video.paused || video.ended) {
+      return;
+    }
+
+    const currentTime = video.currentTime;
+
+    console.log(
+      "AVEM : image analysée à " +
+      formatTime(currentTime)
+    );
+
+  }, 1000);
+}
+
+
+function stopFrameAnalysis() {
+
+  if (avemFrameTimer) {
+
+    clearInterval(avemFrameTimer);
+
+    avemFrameTimer = null;
+  }
+
+  console.log(
+    "AVEM : analyse des images arrêtée"
+  );
 }
 </script>
 
