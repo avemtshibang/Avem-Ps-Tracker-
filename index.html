@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AVEM PS Tracker</title>
 
 <style>
-
 * {
   box-sizing: border-box;
 }
@@ -31,15 +29,10 @@ header h1 {
   font-size: 26px;
 }
 
-header p {
-  margin-top: 8px;
-  opacity: 0.8;
-}
-
 .container {
-  max-width: 600px;
+  max-width: 650px;
   margin: auto;
-  padding: 20px;
+  padding: 18px;
 }
 
 .card {
@@ -51,9 +44,29 @@ header p {
 }
 
 .title {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: bold;
   margin-bottom: 15px;
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.console {
+  border: 2px solid #ddd;
+  background: #f8f9fa;
+  padding: 18px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.console.selected {
+  border-color: #111;
+  background: #e9ecef;
 }
 
 .big-number {
@@ -62,28 +75,9 @@ header p {
   text-align: center;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.stat {
-  background: #f1f3f5;
-  padding: 15px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
 .timer {
   text-align: center;
-  font-size: 34px;
+  font-size: 38px;
   font-weight: bold;
   margin: 15px 0;
 }
@@ -112,6 +106,19 @@ button {
   background: #ddd;
 }
 
+.stat {
+  background: #f1f3f5;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
 .day {
   padding: 12px 0;
   border-bottom: 1px solid #ddd;
@@ -120,30 +127,55 @@ button {
 .day:last-child {
   border-bottom: none;
 }
-
 </style>
 </head>
 
 <body>
 
 <header>
-
 <h1>🎮 AVEM PS TRACKER</h1>
-
-<p>Tableau de bord</p>
-
+<p>Gestion de 4 consoles</p>
 </header>
 
-
 <div class="container">
-
-
-<!-- AUJOURD'HUI -->
 
 <div class="card">
 
 <div class="title">
-📅 Aujourd'hui
+🎮 Choisir une console
+</div>
+
+<div class="console-grid">
+
+<button class="console" onclick="selectConsole('PS1')" id="PS1">
+🎮 PS1
+</button>
+
+<button class="console" onclick="selectConsole('PS2')" id="PS2">
+🎮 PS2
+</button>
+
+<button class="console" onclick="selectConsole('PS3')" id="PS3">
+🎮 PS3
+</button>
+
+<button class="console" onclick="selectConsole('PS4')" id="PS4">
+🎮 PS4
+</button>
+
+</div>
+
+<p id="selectedConsole">
+Aucune console sélectionnée
+</p>
+
+</div>
+
+
+<div class="card">
+
+<div class="title">
+📊 Aujourd'hui
 </div>
 
 <div class="big-number" id="todayMatches">
@@ -156,35 +188,22 @@ Matchs joués
 
 <br>
 
-<div class="stats">
-
 <div class="stat">
-
 ⏱️ Temps total
-
 <div class="stat-number" id="todayTime">
 0 min
 </div>
-
 </div>
 
-
 <div class="stat">
-
-📊 Moyenne
-
+📊 Moyenne par match
 <div class="stat-number" id="average">
 0 min
 </div>
-
 </div>
 
 </div>
 
-</div>
-
-
-<!-- CHRONOMÈTRE -->
 
 <div class="card">
 
@@ -197,81 +216,44 @@ Matchs joués
 </div>
 
 <button class="start" onclick="startMatch()">
-
 ▶️ Démarrer le match
-
 </button>
 
 <button class="stop" onclick="endMatch()">
-
 ⏹️ Terminer le match
-
-</button>
-
-<button class="reset" onclick="resetData()">
-
-🔄 Réinitialiser les données
-
 </button>
 
 </div>
 
 
-<!-- RECORD -->
+<div class="card">
+
+<div class="title">
+📊 Statistiques des consoles
+</div>
+
+<div id="consoleStats">
+</div>
+
+</div>
+
 
 <div class="card">
 
 <div class="title">
-🏆 Record
+📅 Les 7 derniers jours
 </div>
 
-<div class="stats">
-
-<div class="stat">
-
-🎮 Plus de matchs
-
-<div class="stat-number" id="recordMatches">
-0
+<div id="week">
 </div>
 
 </div>
 
-
-<div class="stat">
-
-⏱️ Plus longue session
-
-<div class="stat-number" id="recordDuration">
-0 min
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- 7 DERNIERS JOURS -->
 
 <div class="card">
 
 <div class="title">
-📊 Les 7 derniers jours
-</div>
-
-<div id="week"></div>
-
-</div>
-
-
-<!-- HISTORIQUE -->
-
-<div class="card">
-
-<div class="title">
-📜 Matchs d'aujourd'hui
+📜 Historique
 </div>
 
 <div id="history">
@@ -281,20 +263,51 @@ Aucun match.
 </div>
 
 
+<div class="card">
+
+<button class="reset" onclick="resetData()">
+🔄 Réinitialiser toutes les données
+</button>
+
+</div>
+
 </div>
 
 
 <script>
 
-
 let data =
 JSON.parse(localStorage.getItem("avemPSData")) || {};
 
+let selectedConsole = null;
 let startTime = null;
-
 let timerInterval = null;
 
 
+/* CONSOLE */
+
+function selectConsole(consoleName) {
+
+if (startTime) {
+alert("Termine d'abord le match en cours.");
+return;
+}
+
+selectedConsole = consoleName;
+
+document.getElementById("selectedConsole").textContent =
+"Console sélectionnée : " + consoleName;
+
+["PS1","PS2","PS3","PS4"].forEach(name => {
+document.getElementById(name).classList.remove("selected");
+});
+
+document.getElementById(consoleName).classList.add("selected");
+
+}
+
+
+/* DATE */
 
 function getToday() {
 
@@ -305,17 +318,15 @@ return date.toISOString().split("T")[0];
 }
 
 
+/* FORMAT TEMPS */
 
 function formatMinutes(minutes) {
 
 if (minutes < 60) {
-
 return minutes + " min";
-
 }
 
 const hours = Math.floor(minutes / 60);
-
 const mins = minutes % 60;
 
 return hours + " h " + mins + " min";
@@ -323,13 +334,17 @@ return hours + " h " + mins + " min";
 }
 
 
+/* DEMARRER */
 
 function startMatch() {
 
-if (startTime) {
-
+if (!selectedConsole) {
+alert("Sélectionne d'abord une console.");
 return;
+}
 
+if (startTime) {
+return;
 }
 
 startTime = new Date();
@@ -341,6 +356,7 @@ updateTimer();
 }
 
 
+/* CHRONOMETRE */
 
 function updateTimer() {
 
@@ -360,22 +376,19 @@ seconds % 60;
 document.getElementById("timer").textContent =
 
 String(minutes).padStart(2,"0")
-+
-":" +
++ ":" +
 String(secs).padStart(2,"0");
 
 }
 
 
+/* TERMINER */
 
 function endMatch() {
 
 if (!startTime) {
-
 alert("Aucun match en cours.");
-
 return;
-
 }
 
 clearInterval(timerInterval);
@@ -383,20 +396,17 @@ clearInterval(timerInterval);
 const endTime = new Date();
 
 const duration =
-
-Math.floor(
-(endTime - startTime) / 60000
-);
+Math.floor((endTime - startTime) / 60000);
 
 const today = getToday();
 
 if (!data[today]) {
-
 data[today] = [];
-
 }
 
 data[today].push({
+
+console: selectedConsole,
 
 start: startTime.toLocaleTimeString("fr-FR"),
 
@@ -418,6 +428,7 @@ updateDashboard();
 }
 
 
+/* SAUVEGARDE */
 
 function saveData() {
 
@@ -429,15 +440,14 @@ JSON.stringify(data)
 }
 
 
+/* RESET */
 
 function resetData() {
 
 if (!confirm(
-"Voulez-vous supprimer toutes les données ?"
+"Supprimer toutes les données des 4 consoles ?"
 )) {
-
 return;
-
 }
 
 data = {};
@@ -446,9 +456,13 @@ saveData();
 
 updateDashboard();
 
+document.getElementById("timer").textContent =
+"00:00";
+
 }
 
 
+/* TABLEAU DE BORD */
 
 function updateDashboard() {
 
@@ -457,101 +471,86 @@ const today = getToday();
 const matches = data[today] || [];
 
 
+/* TOTAL */
 
-/* MATCHS */
+document.getElementById("todayMatches").textContent =
+matches.length;
 
-document.getElementById(
-"todayMatches"
-).textContent = matches.length;
-
-
-
-/* TEMPS TOTAL */
 
 let total = 0;
 
 matches.forEach(match => {
-
 total += match.duration;
-
 });
 
-document.getElementById(
-"todayTime"
-).textContent =
+
+document.getElementById("todayTime").textContent =
 formatMinutes(total);
 
-
-
-/* MOYENNE */
 
 let average = 0;
 
 if (matches.length > 0) {
-
-average =
-Math.round(total / matches.length);
-
+average = Math.round(total / matches.length);
 }
 
-document.getElementById(
-"average"
-).textContent =
+
+document.getElementById("average").textContent =
 formatMinutes(average);
 
 
+/* STATISTIQUES DES CONSOLES */
 
-/* RECORD */
+const consoleStats =
+document.getElementById("consoleStats");
 
-let recordMatches = 0;
-
-let recordDuration = 0;
-
+consoleStats.innerHTML = "";
 
 
-Object.values(data).forEach(day => {
+["PS1","PS2","PS3","PS4"].forEach(consoleName => {
 
-if (day.length > recordMatches) {
+const consoleMatches =
+matches.filter(
+match => match.console === consoleName
+);
 
-recordMatches = day.length;
+let consoleTime = 0;
 
-}
-
-day.forEach(match => {
-
-if (match.duration > recordDuration) {
-
-recordDuration =
-match.duration;
-
-}
-
-});
-
+consoleMatches.forEach(match => {
+consoleTime += match.duration;
 });
 
 
+const div =
+document.createElement("div");
 
-document.getElementById(
-"recordMatches"
-).textContent =
-recordMatches;
+div.className = "stat";
+
+div.innerHTML =
+
+"🎮 <strong>" +
+consoleName +
+"</strong><br>" +
+
+"Matchs : " +
+consoleMatches.length +
+"<br>" +
+
+"Temps : " +
+formatMinutes(consoleTime);
 
 
+consoleStats.appendChild(div);
 
-document.getElementById(
-"recordDuration"
-).textContent =
-formatMinutes(recordDuration);
-
+});
 
 
 /* SEMAINE */
 
-const week = document.getElementById("week");
+const week =
+document.getElementById("week");
 
 week.innerHTML = "";
-
 
 
 for (let i = 0; i < 7; i++) {
@@ -569,14 +568,12 @@ const dayMatches =
 data[key] || [];
 
 
+const div =
+document.createElement("div");
 
-const day = document.createElement("div");
+div.className = "day";
 
-day.className = "day";
-
-
-
-day.innerHTML =
+div.innerHTML =
 
 "<strong>📅 " +
 key +
@@ -587,11 +584,9 @@ dayMatches.length +
 " match(s)";
 
 
-
-week.appendChild(day);
+week.appendChild(div);
 
 }
-
 
 
 /* HISTORIQUE */
@@ -600,7 +595,6 @@ const history =
 document.getElementById("history");
 
 history.innerHTML = "";
-
 
 
 if (matches.length === 0) {
@@ -613,18 +607,19 @@ return;
 }
 
 
+matches.forEach((match,index) => {
 
-matches.forEach((match, index) => {
-
-const item =
+const div =
 document.createElement("div");
 
-item.className = "day";
+div.className = "day";
 
-item.innerHTML =
+div.innerHTML =
 
 "🎮 <strong>Match " +
 (index + 1) +
+" — " +
+match.console +
 "</strong><br>" +
 
 "🕐 Début : " +
@@ -639,17 +634,14 @@ match.end +
 formatMinutes(match.duration);
 
 
-
-history.appendChild(item);
+history.appendChild(div);
 
 });
 
 }
 
 
-
 updateDashboard();
-
 
 </script>
 
