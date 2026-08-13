@@ -487,7 +487,9 @@ videoFile.value = "";
 let avemState = "WAITING";
 let avemMatchStart = null;
 let avemConsole = null;
-
+let data = JSON.parse(
+  localStorage.getItem("avemPSData") || "{}"
+);
 function avemStartMatch(consoleName) {
 
   if (avemState === "PLAYING") {
