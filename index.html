@@ -23,11 +23,12 @@ header {
   background: #111;
   color: white;
   text-align: center;
-  padding: 24px 15px;
+  padding: 25px 15px;
 }
 
 header h1 {
   margin: 0;
+  font-size: 26px;
 }
 
 .container {
@@ -50,39 +51,48 @@ header h1 {
   margin-bottom: 15px;
 }
 
+input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+video {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 12px;
+  background: black;
+}
+
 .status {
-  text-align: center;
+  margin-top: 15px;
   padding: 15px;
   border-radius: 12px;
   background: #eee;
-  font-size: 18px;
+  text-align: center;
   font-weight: bold;
 }
 
-.number {
-  text-align: center;
-  font-size: 55px;
-  font-weight: bold;
-  margin: 15px;
+.info {
+  margin-top: 10px;
+  padding: 12px;
+  background: #f1f3f5;
+  border-radius: 10px;
 }
 
 button {
   width: 100%;
+  padding: 15px;
+  margin-top: 10px;
   border: none;
   border-radius: 12px;
-  padding: 16px;
-  margin-top: 10px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: bold;
 }
 
-.start {
-  background: green;
-  color: white;
-}
-
-.end {
-  background: red;
+.analyse {
+  background: #111;
   color: white;
 }
 
@@ -90,24 +100,11 @@ button {
   background: #ddd;
 }
 
-.console-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.console {
-  background: #eee;
-}
-
-.selected {
-  background: #111;
-  color: white;
-}
-
-.history {
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
+.result {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  padding: 15px;
 }
 
 </style>
@@ -119,7 +116,7 @@ button {
 
 <h1>🎮 AVEM PS TRACKER</h1>
 
-<p>Mode test du détecteur</p>
+<p>🤖 Analyse vidéo — Prototype</p>
 
 </header>
 
@@ -130,44 +127,17 @@ button {
 <div class="card">
 
 <div class="title">
-🎮 Choisir la console
+📹 Sélectionner une vidéo
 </div>
 
-<div class="console-grid">
+<input
+  type="file"
+  id="videoFile"
+  accept="video/*"
+>
 
-<button class="console" onclick="chooseConsole('PS1')" id="PS1">
-PS1
-</button>
-
-<button class="console" onclick="chooseConsole('PS2')" id="PS2">
-PS2
-</button>
-
-<button class="console" onclick="chooseConsole('PS3')" id="PS3">
-PS3
-</button>
-
-<button class="console" onclick="chooseConsole('PS4')" id="PS4">
-PS4
-</button>
-
-</div>
-
-<p id="consoleName">
-Aucune console sélectionnée
-</p>
-
-</div>
-
-
-<div class="card">
-
-<div class="title">
-🤖 État du détecteur
-</div>
-
-<div class="status" id="status">
-⚪ EN ATTENTE
+<div id="fileInfo" class="info">
+Aucune vidéo sélectionnée.
 </div>
 
 </div>
@@ -176,11 +146,33 @@ Aucune console sélectionnée
 <div class="card">
 
 <div class="title">
-🎮 Matchs confirmés aujourd'hui
+🎬 Vidéo à analyser
 </div>
 
-<div class="number" id="matchCount">
-0
+<video
+  id="video"
+  controls
+  playsinline
+></video>
+
+<div id="status" class="status">
+⚪ En attente d'une vidéo
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="title">
+📊 Informations vidéo
+</div>
+
+<div id="videoInfo">
+
+Durée : —<br>
+Position : —
+
 </div>
 
 </div>
@@ -189,23 +181,25 @@ Aucune console sélectionnée
 <div class="card">
 
 <div class="title">
-🧪 Simulation du détecteur
+🤖 Détecteur AVEM
 </div>
 
-<p>
-Ces boutons représentent ce que la caméra verra plus tard.
-</p>
+<div id="detectorState" class="result">
+⚪ PRÊT
+</div>
 
-<button class="start" onclick="matchDetected()">
-🟢 Début de match détecté
+<button
+  class="analyse"
+  onclick="startAnalysis()"
+>
+🤖 Lancer l'analyse
 </button>
 
-<button class="end" onclick="endDetected()">
-🔴 Fin de match détectée
-</button>
-
-<button class="reset" onclick="resetTest()">
-🔄 Réinitialiser le test
+<button
+  class="reset"
+  onclick="resetAnalysis()"
+>
+🔄 Réinitialiser
 </button>
 
 </div>
@@ -214,11 +208,13 @@ Ces boutons représentent ce que la caméra verra plus tard.
 <div class="card">
 
 <div class="title">
-📜 Historique des matchs
+🎮 Résultat
 </div>
 
-<div id="history">
-Aucun match confirmé.
+<div id="result">
+
+Aucune analyse effectuée.
+
 </div>
 
 </div>
@@ -229,232 +225,261 @@ Aucun match confirmé.
 
 <script>
 
-let selectedConsole = null;
+const video =
+document.getElementById("video");
 
-let state = "waiting";
+const videoFile =
+document.getElementById("videoFile");
 
-let matches =
-JSON.parse(
-localStorage.getItem("avemTestMatches")
-) || [];
+const status =
+document.getElementById("status");
+
+const videoInfo =
+document.getElementById("videoInfo");
+
+const fileInfo =
+document.getElementById("fileInfo");
+
+const detectorState =
+document.getElementById("detectorState");
+
+const result =
+document.getElementById("result");
+
+let videoURL = null;
+
+let analysing = false;
 
 
-/* CHOISIR CONSOLE */
+/* SELECTION VIDEO */
 
-function chooseConsole(name) {
+videoFile.addEventListener(
+"change",
+function() {
 
-if (state === "playing") {
+const file =
+this.files[0];
 
-alert("Termine d'abord le match.");
-
+if (!file) {
 return;
-
 }
 
-selectedConsole = name;
 
-document.getElementById(
-"consoleName"
-).textContent =
-"Console : " + name;
+/* Supprimer ancienne URL */
+
+if (videoURL) {
+URL.revokeObjectURL(videoURL);
+}
 
 
-["PS1","PS2","PS3","PS4"].forEach(
-function(consoleName) {
+/* Créer nouvelle URL */
 
-document
-.getElementById(consoleName)
-.classList.remove("selected");
+videoURL =
+URL.createObjectURL(file);
+
+video.src = videoURL;
+
+
+/* Informations */
+
+fileInfo.innerHTML =
+"<strong>Vidéo :</strong> " +
+file.name +
+"<br>" +
+"<strong>Taille :</strong> " +
+formatFileSize(file.size);
+
+
+status.textContent =
+"🟢 Vidéo chargée";
+
+detectorState.textContent =
+"⚪ PRÊT";
+
+result.textContent =
+"Aucune analyse effectuée.";
 
 });
 
 
-document
-.getElementById(name)
-.classList.add("selected");
+/* TAILLE */
+
+function formatFileSize(bytes) {
+
+const mb =
+bytes / (1024 * 1024);
+
+return mb.toFixed(1) + " MB";
 
 }
 
 
-/* DEBUT DETECTE */
+/* INFORMATIONS VIDEO */
 
-function matchDetected() {
+video.addEventListener(
+"loadedmetadata",
+function() {
 
-if (!selectedConsole) {
+videoInfo.innerHTML =
 
-alert("Choisis d'abord une console.");
-
-return;
-
-}
-
-
-/* Protection contre double début */
-
-if (state === "playing") {
-
-alert("Un match est déjà en cours.");
-
-return;
-
-}
-
-state = "playing";
-
-document.getElementById(
-"status"
-).textContent =
-"🟢 MATCH EN COURS";
-
-}
-
-
-/* FIN DETECTEE */
-
-function endDetected() {
-
-if (state !== "playing") {
-
-alert(
-"Aucun match en cours : le système ne compte rien."
-);
-
-return;
-
-}
-
-
-/* Confirmation */
-
-state = "finished";
-
-document.getElementById(
-"status"
-).textContent =
-"🟠 FIN DÉTECTÉE";
-
-
-/* Ajouter UN seul match */
-
-matches.push({
-
-console: selectedConsole,
-
-date: new Date().toLocaleString("fr-FR")
-
-});
-
-
-localStorage.setItem(
-"avemTestMatches",
-JSON.stringify(matches)
-);
-
-
-/* Retour attente */
-
-setTimeout(function() {
-
-state = "waiting";
-
-document.getElementById(
-"status"
-).textContent =
-"⚪ EN ATTENTE";
-
-updateScreen();
-
-}, 1000);
-
-}
-
-
-/* AFFICHAGE */
-
-function updateScreen() {
-
-document.getElementById(
-"matchCount"
-).textContent =
-matches.length;
-
-
-const history =
-document.getElementById("history");
-
-history.innerHTML = "";
-
-
-if (matches.length === 0) {
-
-history.innerHTML =
-"Aucun match confirmé.";
-
-return;
-
-}
-
-
-matches.forEach(
-function(match,index) {
-
-const item =
-document.createElement("div");
-
-item.className = "history";
-
-item.innerHTML =
-
-"🎮 Match " +
-(index + 1) +
-
-" — " +
-match.console +
+"<strong>Durée :</strong> " +
+formatTime(video.duration) +
 
 "<br>" +
 
-"🕐 " +
-match.date;
-
-history.appendChild(item);
+"<strong>Position :</strong> 00:00";
 
 });
 
+
+/* POSITION */
+
+video.addEventListener(
+"timeupdate",
+function() {
+
+if (!video.duration) {
+return;
 }
+
+videoInfo.innerHTML =
+
+"<strong>Durée :</strong> " +
+formatTime(video.duration) +
+
+"<br>" +
+
+"<strong>Position :</strong> " +
+formatTime(video.currentTime);
+
+});
+
+
+/* FORMAT TEMPS */
+
+function formatTime(seconds) {
+
+if (!isFinite(seconds)) {
+return "00:00";
+}
+
+const min =
+Math.floor(seconds / 60);
+
+const sec =
+Math.floor(seconds % 60);
+
+return (
+String(min).padStart(2,"0")
++
+":" +
+String(sec).padStart(2,"0")
+);
+
+}
+
+
+/* ANALYSE */
+
+function startAnalysis() {
+
+if (!video.src) {
+
+alert(
+"Sélectionne d'abord une vidéo."
+);
+
+return;
+
+}
+
+if (analysing) {
+return;
+}
+
+analysing = true;
+
+detectorState.textContent =
+"🔵 ANALYSE EN COURS";
+
+status.textContent =
+"🤖 AVEM analyse la vidéo...";
+
+result.textContent =
+"Analyse en cours...";
+
+
+/*
+Pour ce premier prototype,
+on lit simplement la vidéo.
+La véritable reconnaissance
+PES/eFootball sera ajoutée
+dans l'étape suivante.
+*/
+
+video.currentTime = 0;
+
+video.play();
+
+}
+
+
+/* FIN VIDEO */
+
+video.addEventListener(
+"ended",
+function() {
+
+analysing = false;
+
+detectorState.textContent =
+"🟢 ANALYSE TERMINÉE";
+
+status.textContent =
+"✅ Vidéo analysée";
+
+result.innerHTML =
+
+"<strong>Vidéo terminée.</strong>" +
+"<br><br>" +
+"Le moteur AVEM est prêt pour " +
+"l'étape de reconnaissance.";
+
+});
 
 
 /* RESET */
 
-function resetTest() {
+function resetAnalysis() {
 
-matches = [];
+analysing = false;
 
-state = "waiting";
+video.pause();
 
-selectedConsole = null;
+video.currentTime = 0;
 
-localStorage.removeItem(
-"avemTestMatches"
-);
+detectorState.textContent =
+"⚪ PRÊT";
 
-document.getElementById(
-"status"
-).textContent =
-"⚪ EN ATTENTE";
+status.textContent =
+"⚪ En attente d'une vidéo";
 
-document.getElementById(
-"consoleName"
-).textContent =
-"Aucune console sélectionnée";
+result.textContent =
+"Aucune analyse effectuée.";
 
-updateScreen();
+videoInfo.innerHTML =
+"Durée : —<br>Position : —";
+
+fileInfo.textContent =
+"Aucune vidéo sélectionnée.";
+
+video.removeAttribute("src");
+
+video.load();
+
+videoFile.value = "";
 
 }
-
-
-/* INITIALISATION */
-
-updateScreen();
 
 </script>
 
