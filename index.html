@@ -6,212 +6,173 @@
   <title>AVEM PS Tracker</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f2f4f7;
-      color: #111;
       text-align: center;
     }
 
     header {
       background: #111;
       color: white;
-      padding: 25px 15px;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    header p {
-      margin: 8px 0 0;
-      opacity: 0.8;
+      padding: 20px;
     }
 
     .container {
-      padding: 25px 18px;
+      padding: 20px;
       max-width: 500px;
       margin: auto;
     }
 
     .card {
       background: white;
-      border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
     }
 
     .number {
-      font-size: 60px;
+      font-size: 50px;
       font-weight: bold;
-      margin: 10px 0;
     }
 
-    .label {
-      color: #666;
-      font-size: 16px;
+    .time {
+      font-size: 20px;
+      margin-top: 10px;
     }
 
     button {
       width: 100%;
+      padding: 15px;
+      margin-top: 10px;
       border: none;
-      border-radius: 15px;
-      padding: 17px;
-      margin-top: 12px;
-      font-size: 18px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: bold;
-      cursor: pointer;
     }
 
-    .match {
-      background: #111;
+    .start {
+      background: green;
+      color: white;
+    }
+
+    .stop {
+      background: red;
       color: white;
     }
 
     .reset {
-      background: #e9ecef;
-      color: #111;
+      background: #ddd;
     }
 
     .history {
       text-align: left;
-    }
-
-    .history-item {
-      padding: 12px 0;
-      border-bottom: 1px solid #ddd;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>🎮 AVEM PS TRACKER</h1>
-    <p>Suivi de tes matchs</p>
-  </header>
+<header>
+  <h1>🎮 AVEM PS TRACKER</h1>
+</header>
 
-  <div class="container">
+<div class="container">
 
-    <div class="card">
-      <div class="label">MATCHS AUJOURD'HUI</div>
-      <div class="number" id="matchCount">0</div>
+  <div class="card">
+    <div>Matchs aujourd’hui</div>
+    <div class="number" id="count">0</div>
+    <div class="time" id="totalTime">Temps total : 0 min</div>
 
-      <button class="match" onclick="addMatch()">
-        ➕ MATCH TERMINÉ
-      </button>
-
-      <button class="reset" onclick="resetToday()">
-        🔄 Réinitialiser aujourd'hui
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="label">HISTORIQUE</div>
-
-      <div class="history" id="history">
-        Aucun match enregistré.
-      </div>
-    </div>
-
+    <button class="start" onclick="startMatch()">▶️ Démarrer match</button>
+    <button class="stop" onclick="endMatch()">⏹️ Terminer match</button>
+    <button class="reset" onclick="reset()">🔄 Réinitialiser</button>
   </div>
 
-  <script>
+  <div class="card">
+    <div>Historique</div>
+    <div class="history" id="history"></div>
+  </div>
 
-    let matches = JSON.parse(localStorage.getItem("avemMatches")) || {};
+</div>
 
-    function getToday() {
-      const date = new Date();
+<script>
 
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
+let data = JSON.parse(localStorage.getItem("psData")) || {};
+let currentStart = null;
 
-      return `${year}-${month}-${day}`;
-    }
+function getToday() {
+  return new Date().toISOString().split("T")[0];
+}
 
-    function addMatch() {
+function startMatch() {
+  currentStart = new Date();
+  alert("Match démarré !");
+}
 
-      const today = getToday();
+function endMatch() {
+  if (!currentStart) {
+    alert("Démarre d'abord un match !");
+    return;
+  }
 
-      if (!matches[today]) {
-        matches[today] = [];
-      }
+  const end = new Date();
+  const duration = Math.floor((end - currentStart) / 60000);
 
-      const now = new Date();
+  const today = getToday();
 
-      matches[today].push({
-        time: now.toLocaleTimeString("fr-FR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      });
+  if (!data[today]) data[today] = [];
 
-      saveData();
-      updateScreen();
-    }
+  data[today].push({
+    start: currentStart.toLocaleTimeString(),
+    end: end.toLocaleTimeString(),
+    duration: duration
+  });
 
-    function resetToday() {
+  currentStart = null;
 
-      const today = getToday();
+  save();
+  update();
+}
 
-      if (confirm("Voulez-vous supprimer les matchs d'aujourd'hui ?")) {
-        delete matches[today];
+function save() {
+  localStorage.setItem("psData", JSON.stringify(data));
+}
 
-        saveData();
-        updateScreen();
-      }
-    }
+function reset() {
+  if (confirm("Supprimer les données ?")) {
+    data = {};
+    save();
+    update();
+  }
+}
 
-    function saveData() {
-      localStorage.setItem("avemMatches", JSON.stringify(matches));
-    }
+function update() {
+  const today = getToday();
+  const matches = data[today] || [];
 
-    function updateScreen() {
+  document.getElementById("count").textContent = matches.length;
 
-      const today = getToday();
+  let total = 0;
+  matches.forEach(m => total += m.duration);
 
-      const todayMatches = matches[today] || [];
+  document.getElementById("totalTime").textContent = "Temps total : " + total + " min";
 
-      document.getElementById("matchCount").textContent =
-        todayMatches.length;
+  const history = document.getElementById("history");
+  history.innerHTML = "";
 
-      const history = document.getElementById("history");
+  matches.forEach((m, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `🎮 Match ${i+1} : ${m.start} - ${m.end} (${m.duration} min)`;
+    history.appendChild(div);
+  });
+}
 
-      if (Object.keys(matches).length === 0) {
-        history.innerHTML = "Aucun match enregistré.";
-        return;
-      }
+update();
 
-      history.innerHTML = "";
-
-      Object.keys(matches)
-        .sort()
-        .reverse()
-        .forEach(date => {
-
-          const item = document.createElement("div");
-
-          item.className = "history-item";
-
-          item.innerHTML =
-            "<strong>📅 " + date + "</strong><br>" +
-            "🎮 " + matches[date].length + " match(s)";
-
-          history.appendChild(item);
-        });
-    }
-
-    updateScreen();
-
-  </script>
+</script>
 
 </body>
 </html>
