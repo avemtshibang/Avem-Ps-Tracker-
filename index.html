@@ -690,6 +690,27 @@ function stopFrameAnalysis() {
     "AVEM : analyse des images arrêtée"
   );
 }
+  // ==========================================
+// AVEM - DETECTEUR DE MATCH
+// ==========================================
+
+let avemMatchDetected = false;
+
+function detectEfootballFrame() {
+
+  if (!video.src || video.paused || video.ended) {
+    return false;
+  }
+
+  const currentTime = video.currentTime;
+
+  console.log(
+    "AVEM : recherche du match à " +
+    formatTime(currentTime)
+  );
+detectEfootballFrame();
+  return false;
+}
 </script>
 
 </body>
