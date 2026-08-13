@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AVEM PS Tracker</title>
 
 <style>
+
 * {
   box-sizing: border-box;
 }
@@ -21,12 +23,11 @@ header {
   background: #111;
   color: white;
   text-align: center;
-  padding: 25px 15px;
+  padding: 24px 15px;
 }
 
 header h1 {
   margin: 0;
-  font-size: 26px;
 }
 
 .container {
@@ -49,37 +50,20 @@ header h1 {
   margin-bottom: 15px;
 }
 
-.console-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.console {
-  border: 2px solid #ddd;
-  background: #f8f9fa;
-  padding: 18px;
-  border-radius: 14px;
+.status {
+  text-align: center;
+  padding: 15px;
+  border-radius: 12px;
+  background: #eee;
   font-size: 18px;
   font-weight: bold;
 }
 
-.console.selected {
-  border-color: #111;
-  background: #e9ecef;
-}
-
-.big-number {
-  font-size: 48px;
-  font-weight: bold;
+.number {
   text-align: center;
-}
-
-.timer {
-  text-align: center;
-  font-size: 38px;
+  font-size: 55px;
   font-weight: bold;
-  margin: 15px 0;
+  margin: 15px;
 }
 
 button {
@@ -97,7 +81,7 @@ button {
   color: white;
 }
 
-.stop {
+.end {
   background: red;
   color: white;
 }
@@ -106,66 +90,70 @@ button {
   background: #ddd;
 }
 
-.stat {
-  background: #f1f3f5;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 10px;
+.console-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.stat-number {
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 5px;
+.console {
+  background: #eee;
 }
 
-.day {
-  padding: 12px 0;
+.selected {
+  background: #111;
+  color: white;
+}
+
+.history {
+  padding: 10px 0;
   border-bottom: 1px solid #ddd;
 }
 
-.day:last-child {
-  border-bottom: none;
-}
 </style>
 </head>
 
 <body>
 
 <header>
+
 <h1>🎮 AVEM PS TRACKER</h1>
-<p>Gestion de 4 consoles</p>
+
+<p>Mode test du détecteur</p>
+
 </header>
 
+
 <div class="container">
+
 
 <div class="card">
 
 <div class="title">
-🎮 Choisir une console
+🎮 Choisir la console
 </div>
 
 <div class="console-grid">
 
-<button class="console" onclick="selectConsole('PS1')" id="PS1">
-🎮 PS1
+<button class="console" onclick="chooseConsole('PS1')" id="PS1">
+PS1
 </button>
 
-<button class="console" onclick="selectConsole('PS2')" id="PS2">
-🎮 PS2
+<button class="console" onclick="chooseConsole('PS2')" id="PS2">
+PS2
 </button>
 
-<button class="console" onclick="selectConsole('PS3')" id="PS3">
-🎮 PS3
+<button class="console" onclick="chooseConsole('PS3')" id="PS3">
+PS3
 </button>
 
-<button class="console" onclick="selectConsole('PS4')" id="PS4">
-🎮 PS4
+<button class="console" onclick="chooseConsole('PS4')" id="PS4">
+PS4
 </button>
 
 </div>
 
-<p id="selectedConsole">
+<p id="consoleName">
 Aucune console sélectionnée
 </p>
 
@@ -175,52 +163,49 @@ Aucune console sélectionnée
 <div class="card">
 
 <div class="title">
-📊 Aujourd'hui
+🤖 État du détecteur
 </div>
 
-<div class="big-number" id="todayMatches">
+<div class="status" id="status">
+⚪ EN ATTENTE
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="title">
+🎮 Matchs confirmés aujourd'hui
+</div>
+
+<div class="number" id="matchCount">
 0
 </div>
 
-<div style="text-align:center;">
-Matchs joués
-</div>
-
-<br>
-
-<div class="stat">
-⏱️ Temps total
-<div class="stat-number" id="todayTime">
-0 min
-</div>
-</div>
-
-<div class="stat">
-📊 Moyenne par match
-<div class="stat-number" id="average">
-0 min
-</div>
-</div>
-
 </div>
 
 
 <div class="card">
 
 <div class="title">
-🎮 Match en cours
+🧪 Simulation du détecteur
 </div>
 
-<div class="timer" id="timer">
-00:00
-</div>
+<p>
+Ces boutons représentent ce que la caméra verra plus tard.
+</p>
 
-<button class="start" onclick="startMatch()">
-▶️ Démarrer le match
+<button class="start" onclick="matchDetected()">
+🟢 Début de match détecté
 </button>
 
-<button class="stop" onclick="endMatch()">
-⏹️ Terminer le match
+<button class="end" onclick="endDetected()">
+🔴 Fin de match détectée
+</button>
+
+<button class="reset" onclick="resetTest()">
+🔄 Réinitialiser le test
 </button>
 
 </div>
@@ -229,367 +214,170 @@ Matchs joués
 <div class="card">
 
 <div class="title">
-📊 Statistiques des consoles
-</div>
-
-<div id="consoleStats">
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="title">
-📅 Les 7 derniers jours
-</div>
-
-<div id="week">
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="title">
-📜 Historique
+📜 Historique des matchs
 </div>
 
 <div id="history">
-Aucun match.
+Aucun match confirmé.
 </div>
 
 </div>
 
-
-<div class="card">
-
-<button class="reset" onclick="resetData()">
-🔄 Réinitialiser toutes les données
-</button>
-
-</div>
 
 </div>
 
 
 <script>
 
-let data =
-JSON.parse(localStorage.getItem("avemPSData")) || {};
-
 let selectedConsole = null;
-let startTime = null;
-let timerInterval = null;
+
+let state = "waiting";
+
+let matches =
+JSON.parse(
+localStorage.getItem("avemTestMatches")
+) || [];
 
 
-/* CONSOLE */
+/* CHOISIR CONSOLE */
 
-function selectConsole(consoleName) {
+function chooseConsole(name) {
 
-if (startTime) {
-alert("Termine d'abord le match en cours.");
+if (state === "playing") {
+
+alert("Termine d'abord le match.");
+
 return;
+
 }
 
-selectedConsole = consoleName;
+selectedConsole = name;
 
-document.getElementById("selectedConsole").textContent =
-"Console sélectionnée : " + consoleName;
+document.getElementById(
+"consoleName"
+).textContent =
+"Console : " + name;
 
-["PS1","PS2","PS3","PS4"].forEach(name => {
-document.getElementById(name).classList.remove("selected");
+
+["PS1","PS2","PS3","PS4"].forEach(
+function(consoleName) {
+
+document
+.getElementById(consoleName)
+.classList.remove("selected");
+
 });
 
-document.getElementById(consoleName).classList.add("selected");
+
+document
+.getElementById(name)
+.classList.add("selected");
 
 }
 
 
-/* DATE */
+/* DEBUT DETECTE */
 
-function getToday() {
-
-const date = new Date();
-
-return date.toISOString().split("T")[0];
-
-}
-
-
-/* FORMAT TEMPS */
-
-function formatMinutes(minutes) {
-
-if (minutes < 60) {
-return minutes + " min";
-}
-
-const hours = Math.floor(minutes / 60);
-const mins = minutes % 60;
-
-return hours + " h " + mins + " min";
-
-}
-
-
-/* DEMARRER */
-
-function startMatch() {
+function matchDetected() {
 
 if (!selectedConsole) {
-alert("Sélectionne d'abord une console.");
+
+alert("Choisis d'abord une console.");
+
 return;
+
 }
 
-if (startTime) {
+
+/* Protection contre double début */
+
+if (state === "playing") {
+
+alert("Un match est déjà en cours.");
+
 return;
-}
-
-startTime = new Date();
-
-timerInterval = setInterval(updateTimer, 1000);
-
-updateTimer();
 
 }
 
+state = "playing";
 
-/* CHRONOMETRE */
-
-function updateTimer() {
-
-if (!startTime) return;
-
-const now = new Date();
-
-const seconds =
-Math.floor((now - startTime) / 1000);
-
-const minutes =
-Math.floor(seconds / 60);
-
-const secs =
-seconds % 60;
-
-document.getElementById("timer").textContent =
-
-String(minutes).padStart(2,"0")
-+ ":" +
-String(secs).padStart(2,"0");
+document.getElementById(
+"status"
+).textContent =
+"🟢 MATCH EN COURS";
 
 }
 
 
-/* TERMINER */
+/* FIN DETECTEE */
 
-function endMatch() {
+function endDetected() {
 
-if (!startTime) {
-alert("Aucun match en cours.");
+if (state !== "playing") {
+
+alert(
+"Aucun match en cours : le système ne compte rien."
+);
+
 return;
+
 }
 
-clearInterval(timerInterval);
 
-const endTime = new Date();
+/* Confirmation */
 
-const duration =
-Math.floor((endTime - startTime) / 60000);
+state = "finished";
 
-const today = getToday();
+document.getElementById(
+"status"
+).textContent =
+"🟠 FIN DÉTECTÉE";
 
-if (!data[today]) {
-data[today] = [];
-}
 
-data[today].push({
+/* Ajouter UN seul match */
+
+matches.push({
 
 console: selectedConsole,
 
-start: startTime.toLocaleTimeString("fr-FR"),
-
-end: endTime.toLocaleTimeString("fr-FR"),
-
-duration: duration
+date: new Date().toLocaleString("fr-FR")
 
 });
 
-startTime = null;
-
-document.getElementById("timer").textContent =
-"00:00";
-
-saveData();
-
-updateDashboard();
-
-}
-
-
-/* SAUVEGARDE */
-
-function saveData() {
 
 localStorage.setItem(
-"avemPSData",
-JSON.stringify(data)
+"avemTestMatches",
+JSON.stringify(matches)
 );
 
-}
 
+/* Retour attente */
 
-/* RESET */
+setTimeout(function() {
 
-function resetData() {
+state = "waiting";
 
-if (!confirm(
-"Supprimer toutes les données des 4 consoles ?"
-)) {
-return;
-}
+document.getElementById(
+"status"
+).textContent =
+"⚪ EN ATTENTE";
 
-data = {};
+updateScreen();
 
-saveData();
-
-updateDashboard();
-
-document.getElementById("timer").textContent =
-"00:00";
+}, 1000);
 
 }
 
 
-/* TABLEAU DE BORD */
+/* AFFICHAGE */
 
-function updateDashboard() {
+function updateScreen() {
 
-const today = getToday();
-
-const matches = data[today] || [];
-
-
-/* TOTAL */
-
-document.getElementById("todayMatches").textContent =
+document.getElementById(
+"matchCount"
+).textContent =
 matches.length;
 
-
-let total = 0;
-
-matches.forEach(match => {
-total += match.duration;
-});
-
-
-document.getElementById("todayTime").textContent =
-formatMinutes(total);
-
-
-let average = 0;
-
-if (matches.length > 0) {
-average = Math.round(total / matches.length);
-}
-
-
-document.getElementById("average").textContent =
-formatMinutes(average);
-
-
-/* STATISTIQUES DES CONSOLES */
-
-const consoleStats =
-document.getElementById("consoleStats");
-
-consoleStats.innerHTML = "";
-
-
-["PS1","PS2","PS3","PS4"].forEach(consoleName => {
-
-const consoleMatches =
-matches.filter(
-match => match.console === consoleName
-);
-
-let consoleTime = 0;
-
-consoleMatches.forEach(match => {
-consoleTime += match.duration;
-});
-
-
-const div =
-document.createElement("div");
-
-div.className = "stat";
-
-div.innerHTML =
-
-"🎮 <strong>" +
-consoleName +
-"</strong><br>" +
-
-"Matchs : " +
-consoleMatches.length +
-"<br>" +
-
-"Temps : " +
-formatMinutes(consoleTime);
-
-
-consoleStats.appendChild(div);
-
-});
-
-
-/* SEMAINE */
-
-const week =
-document.getElementById("week");
-
-week.innerHTML = "";
-
-
-for (let i = 0; i < 7; i++) {
-
-const date = new Date();
-
-date.setDate(
-date.getDate() - i
-);
-
-const key =
-date.toISOString().split("T")[0];
-
-const dayMatches =
-data[key] || [];
-
-
-const div =
-document.createElement("div");
-
-div.className = "day";
-
-div.innerHTML =
-
-"<strong>📅 " +
-key +
-"</strong><br>" +
-
-"🎮 " +
-dayMatches.length +
-" match(s)";
-
-
-week.appendChild(div);
-
-}
-
-
-/* HISTORIQUE */
 
 const history =
 document.getElementById("history");
@@ -600,48 +388,73 @@ history.innerHTML = "";
 if (matches.length === 0) {
 
 history.innerHTML =
-"Aucun match aujourd'hui.";
+"Aucun match confirmé.";
 
 return;
 
 }
 
 
-matches.forEach((match,index) => {
+matches.forEach(
+function(match,index) {
 
-const div =
+const item =
 document.createElement("div");
 
-div.className = "day";
+item.className = "history";
 
-div.innerHTML =
+item.innerHTML =
 
-"🎮 <strong>Match " +
+"🎮 Match " +
 (index + 1) +
+
 " — " +
 match.console +
-"</strong><br>" +
 
-"🕐 Début : " +
-match.start +
 "<br>" +
 
-"🕐 Fin : " +
-match.end +
-"<br>" +
+"🕐 " +
+match.date;
 
-"⏱️ Durée : " +
-formatMinutes(match.duration);
-
-
-history.appendChild(div);
+history.appendChild(item);
 
 });
 
 }
 
 
-updateDashboard();
+/* RESET */
+
+function resetTest() {
+
+matches = [];
+
+state = "waiting";
+
+selectedConsole = null;
+
+localStorage.removeItem(
+"avemTestMatches"
+);
+
+document.getElementById(
+"status"
+).textContent =
+"⚪ EN ATTENTE";
+
+document.getElementById(
+"consoleName"
+).textContent =
+"Aucune console sélectionnée";
+
+updateScreen();
+
+}
+
+
+/* INITIALISATION */
+
+updateScreen();
 
 </script>
 
