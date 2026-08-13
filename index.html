@@ -480,7 +480,86 @@ video.load();
 videoFile.value = "";
 
 }
+// ==========================================
+// AVEM - MOTEUR AUTOMATIQUE
+// ==========================================
 
+let avemState = "WAITING";
+let avemMatchStart = null;
+let avemConsole = null;
+
+function avemStartMatch(consoleName) {
+
+  if (avemState === "PLAYING") {
+    return;
+  }
+
+  avemConsole = consoleName;
+  avemMatchStart = new Date();
+  avemState = "PLAYING";
+
+  console.log("AVEM : match commencé sur " + consoleName);
+}
+
+
+function avemFinishMatch() {
+
+  if (avemState !== "PLAYING") {
+    return false;
+  }
+
+  const finishTime = new Date();
+
+  const duration =
+    Math.max(
+      1,
+      Math.round(
+        (finishTime - avemMatchStart) / 60000
+      )
+    );
+
+  const today =
+    new Date().toISOString().split("T")[0];
+
+  if (!data[today]) {
+    data[today] = [];
+  }
+
+  data[today].push({
+
+    console: avemConsole,
+
+    start:
+      avemMatchStart.toLocaleTimeString("fr-FR"),
+
+    end:
+      finishTime.toLocaleTimeString("fr-FR"),
+
+    duration: duration,
+
+    automatic: true
+
+  });
+
+  localStorage.setItem(
+    "avemPSData",
+    JSON.stringify(data)
+  );
+
+  avemState = "WAITING";
+  avemMatchStart = null;
+
+  if (typeof updateDashboard === "function") {
+    updateDashboard();
+  }
+
+  console.log(
+    "AVEM : match confirmé sur " +
+    avemConsole
+  );
+
+  return true;
+}
 </script>
 
 </body>
