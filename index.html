@@ -1,137 +1,126 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AVEM PS Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVEM PS Tracker</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f4f7;
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #f2f4f7;
+}
 
-    header {
-      background: #111;
-      color: white;
-      padding: 20px;
-    }
+header {
+  background: #111;
+  color: white;
+  padding: 20px;
+}
 
-    .container {
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
-    }
+.card {
+  background: white;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 15px;
+}
 
-    .card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 15px;
-    }
+.number {
+  font-size: 40px;
+  font-weight: bold;
+}
 
-    .number {
-      font-size: 50px;
-      font-weight: bold;
-    }
+.timer {
+  font-size: 30px;
+  margin-top: 10px;
+  color: green;
+}
 
-    .time {
-      font-size: 20px;
-      margin-top: 10px;
-    }
+button {
+  width: 90%;
+  padding: 15px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
 
-    button {
-      width: 100%;
-      padding: 15px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .start {
-      background: green;
-      color: white;
-    }
-
-    .stop {
-      background: red;
-      color: white;
-    }
-
-    .reset {
-      background: #ddd;
-    }
-
-    .history {
-      text-align: left;
-      margin-top: 10px;
-    }
-  </style>
+.start { background: green; color: white; }
+.stop { background: red; color: white; }
+.reset { background: #ddd; }
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>🎮 AVEM PS TRACKER</h1>
+<h1>🎮 AVEM PS TRACKER</h1>
 </header>
 
-<div class="container">
+<div class="card">
+<div>Matchs aujourd’hui</div>
+<div class="number" id="count">0</div>
 
-  <div class="card">
-    <div>Matchs aujourd’hui</div>
-    <div class="number" id="count">0</div>
-    <div class="time" id="totalTime">Temps total : 0 min</div>
+<div class="timer" id="timer">⏱️ 00:00</div>
 
-    <button class="start" onclick="startMatch()">▶️ Démarrer match</button>
-    <button class="stop" onclick="endMatch()">⏹️ Terminer match</button>
-    <button class="reset" onclick="reset()">🔄 Réinitialiser</button>
-  </div>
+<button class="start" onclick="startMatch()">▶️ Démarrer</button>
+<button class="stop" onclick="endMatch()">⏹️ Terminer</button>
+<button class="reset" onclick="reset()">🔄 Reset</button>
+</div>
 
-  <div class="card">
-    <div>Historique</div>
-    <div class="history" id="history"></div>
-  </div>
-
+<div class="card">
+<div>Historique</div>
+<div id="history"></div>
 </div>
 
 <script>
 
 let data = JSON.parse(localStorage.getItem("psData")) || {};
-let currentStart = null;
+let startTime = null;
+let interval = null;
 
 function getToday() {
   return new Date().toISOString().split("T")[0];
 }
 
 function startMatch() {
-  currentStart = new Date();
-  alert("Match démarré !");
+  startTime = new Date();
+
+  interval = setInterval(() => {
+    const now = new Date();
+    const diff = Math.floor((now - startTime) / 1000);
+
+    const min = Math.floor(diff / 60);
+    const sec = diff % 60;
+
+    document.getElementById("timer").textContent =
+      "⏱️ " + String(min).padStart(2,"0") + ":" + String(sec).padStart(2,"0");
+
+  }, 1000);
 }
 
 function endMatch() {
-  if (!currentStart) {
-    alert("Démarre d'abord un match !");
+  if (!startTime) {
+    alert("Démarre un match !");
     return;
   }
 
+  clearInterval(interval);
+
   const end = new Date();
-  const duration = Math.floor((end - currentStart) / 60000);
+  const duration = Math.floor((end - startTime) / 60000);
 
   const today = getToday();
 
   if (!data[today]) data[today] = [];
 
   data[today].push({
-    start: currentStart.toLocaleTimeString(),
+    start: startTime.toLocaleTimeString(),
     end: end.toLocaleTimeString(),
     duration: duration
   });
 
-  currentStart = null;
+  startTime = null;
 
   save();
   update();
@@ -142,11 +131,10 @@ function save() {
 }
 
 function reset() {
-  if (confirm("Supprimer les données ?")) {
-    data = {};
-    save();
-    update();
-  }
+  data = {};
+  save();
+  update();
+  document.getElementById("timer").textContent = "⏱️ 00:00";
 }
 
 function update() {
@@ -155,16 +143,11 @@ function update() {
 
   document.getElementById("count").textContent = matches.length;
 
-  let total = 0;
-  matches.forEach(m => total += m.duration);
-
-  document.getElementById("totalTime").textContent = "Temps total : " + total + " min";
-
-  const history = document.getElementById("history");
+  let history = document.getElementById("history");
   history.innerHTML = "";
 
   matches.forEach((m, i) => {
-    const div = document.createElement("div");
+    let div = document.createElement("div");
     div.innerHTML = `🎮 Match ${i+1} : ${m.start} - ${m.end} (${m.duration} min)`;
     history.appendChild(div);
   });
