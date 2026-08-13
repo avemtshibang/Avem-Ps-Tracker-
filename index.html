@@ -3,157 +3,653 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AVEM PS Tracker</title>
 
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  text-align: center;
+  margin: 0;
+  font-family: Arial, sans-serif;
   background: #f2f4f7;
+  color: #111;
 }
 
 header {
   background: #111;
   color: white;
+  text-align: center;
+  padding: 25px 15px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+header p {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
   padding: 20px;
 }
 
 .card {
   background: white;
+  border-radius: 18px;
   padding: 20px;
-  margin: 20px;
-  border-radius: 15px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.number {
-  font-size: 40px;
+.title {
+  font-size: 18px;
   font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.big-number {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat {
+  background: #f1f3f5;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 6px;
 }
 
 .timer {
-  font-size: 30px;
-  margin-top: 10px;
-  color: green;
+  text-align: center;
+  font-size: 34px;
+  font-weight: bold;
+  margin: 15px 0;
 }
 
 button {
-  width: 90%;
-  padding: 15px;
-  margin-top: 10px;
+  width: 100%;
   border: none;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 10px;
+  font-size: 17px;
+  font-weight: bold;
 }
 
-.start { background: green; color: white; }
-.stop { background: red; color: white; }
-.reset { background: #ddd; }
+.start {
+  background: green;
+  color: white;
+}
+
+.stop {
+  background: red;
+  color: white;
+}
+
+.reset {
+  background: #ddd;
+}
+
+.day {
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.day:last-child {
+  border-bottom: none;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
+
 <h1>🎮 AVEM PS TRACKER</h1>
+
+<p>Tableau de bord</p>
+
 </header>
 
-<div class="card">
-<div>Matchs aujourd’hui</div>
-<div class="number" id="count">0</div>
 
-<div class="timer" id="timer">⏱️ 00:00</div>
+<div class="container">
 
-<button class="start" onclick="startMatch()">▶️ Démarrer</button>
-<button class="stop" onclick="endMatch()">⏹️ Terminer</button>
-<button class="reset" onclick="reset()">🔄 Reset</button>
-</div>
+
+<!-- AUJOURD'HUI -->
 
 <div class="card">
-<div>Historique</div>
-<div id="history"></div>
+
+<div class="title">
+📅 Aujourd'hui
 </div>
+
+<div class="big-number" id="todayMatches">
+0
+</div>
+
+<div style="text-align:center;">
+Matchs joués
+</div>
+
+<br>
+
+<div class="stats">
+
+<div class="stat">
+
+⏱️ Temps total
+
+<div class="stat-number" id="todayTime">
+0 min
+</div>
+
+</div>
+
+
+<div class="stat">
+
+📊 Moyenne
+
+<div class="stat-number" id="average">
+0 min
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- CHRONOMÈTRE -->
+
+<div class="card">
+
+<div class="title">
+🎮 Match en cours
+</div>
+
+<div class="timer" id="timer">
+00:00
+</div>
+
+<button class="start" onclick="startMatch()">
+
+▶️ Démarrer le match
+
+</button>
+
+<button class="stop" onclick="endMatch()">
+
+⏹️ Terminer le match
+
+</button>
+
+<button class="reset" onclick="resetData()">
+
+🔄 Réinitialiser les données
+
+</button>
+
+</div>
+
+
+<!-- RECORD -->
+
+<div class="card">
+
+<div class="title">
+🏆 Record
+</div>
+
+<div class="stats">
+
+<div class="stat">
+
+🎮 Plus de matchs
+
+<div class="stat-number" id="recordMatches">
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+⏱️ Plus longue session
+
+<div class="stat-number" id="recordDuration">
+0 min
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- 7 DERNIERS JOURS -->
+
+<div class="card">
+
+<div class="title">
+📊 Les 7 derniers jours
+</div>
+
+<div id="week"></div>
+
+</div>
+
+
+<!-- HISTORIQUE -->
+
+<div class="card">
+
+<div class="title">
+📜 Matchs d'aujourd'hui
+</div>
+
+<div id="history">
+Aucun match.
+</div>
+
+</div>
+
+
+</div>
+
 
 <script>
 
-let data = JSON.parse(localStorage.getItem("psData")) || {};
+
+let data =
+JSON.parse(localStorage.getItem("avemPSData")) || {};
+
 let startTime = null;
-let interval = null;
+
+let timerInterval = null;
+
+
 
 function getToday() {
-  return new Date().toISOString().split("T")[0];
+
+const date = new Date();
+
+return date.toISOString().split("T")[0];
+
 }
+
+
+
+function formatMinutes(minutes) {
+
+if (minutes < 60) {
+
+return minutes + " min";
+
+}
+
+const hours = Math.floor(minutes / 60);
+
+const mins = minutes % 60;
+
+return hours + " h " + mins + " min";
+
+}
+
+
 
 function startMatch() {
-  startTime = new Date();
 
-  interval = setInterval(() => {
-    const now = new Date();
-    const diff = Math.floor((now - startTime) / 1000);
+if (startTime) {
 
-    const min = Math.floor(diff / 60);
-    const sec = diff % 60;
+return;
 
-    document.getElementById("timer").textContent =
-      "⏱️ " + String(min).padStart(2,"0") + ":" + String(sec).padStart(2,"0");
-
-  }, 1000);
 }
+
+startTime = new Date();
+
+timerInterval = setInterval(updateTimer, 1000);
+
+updateTimer();
+
+}
+
+
+
+function updateTimer() {
+
+if (!startTime) return;
+
+const now = new Date();
+
+const seconds =
+Math.floor((now - startTime) / 1000);
+
+const minutes =
+Math.floor(seconds / 60);
+
+const secs =
+seconds % 60;
+
+document.getElementById("timer").textContent =
+
+String(minutes).padStart(2,"0")
++
+":" +
+String(secs).padStart(2,"0");
+
+}
+
+
 
 function endMatch() {
-  if (!startTime) {
-    alert("Démarre un match !");
-    return;
-  }
 
-  clearInterval(interval);
+if (!startTime) {
 
-  const end = new Date();
-  const duration = Math.floor((end - startTime) / 60000);
+alert("Aucun match en cours.");
 
-  const today = getToday();
+return;
 
-  if (!data[today]) data[today] = [];
-
-  data[today].push({
-    start: startTime.toLocaleTimeString(),
-    end: end.toLocaleTimeString(),
-    duration: duration
-  });
-
-  startTime = null;
-
-  save();
-  update();
 }
 
-function save() {
-  localStorage.setItem("psData", JSON.stringify(data));
+clearInterval(timerInterval);
+
+const endTime = new Date();
+
+const duration =
+
+Math.floor(
+(endTime - startTime) / 60000
+);
+
+const today = getToday();
+
+if (!data[today]) {
+
+data[today] = [];
+
 }
 
-function reset() {
-  data = {};
-  save();
-  update();
-  document.getElementById("timer").textContent = "⏱️ 00:00";
+data[today].push({
+
+start: startTime.toLocaleTimeString("fr-FR"),
+
+end: endTime.toLocaleTimeString("fr-FR"),
+
+duration: duration
+
+});
+
+startTime = null;
+
+document.getElementById("timer").textContent =
+"00:00";
+
+saveData();
+
+updateDashboard();
+
 }
 
-function update() {
-  const today = getToday();
-  const matches = data[today] || [];
 
-  document.getElementById("count").textContent = matches.length;
 
-  let history = document.getElementById("history");
-  history.innerHTML = "";
+function saveData() {
 
-  matches.forEach((m, i) => {
-    let div = document.createElement("div");
-    div.innerHTML = `🎮 Match ${i+1} : ${m.start} - ${m.end} (${m.duration} min)`;
-    history.appendChild(div);
-  });
+localStorage.setItem(
+"avemPSData",
+JSON.stringify(data)
+);
+
 }
 
-update();
+
+
+function resetData() {
+
+if (!confirm(
+"Voulez-vous supprimer toutes les données ?"
+)) {
+
+return;
+
+}
+
+data = {};
+
+saveData();
+
+updateDashboard();
+
+}
+
+
+
+function updateDashboard() {
+
+const today = getToday();
+
+const matches = data[today] || [];
+
+
+
+/* MATCHS */
+
+document.getElementById(
+"todayMatches"
+).textContent = matches.length;
+
+
+
+/* TEMPS TOTAL */
+
+let total = 0;
+
+matches.forEach(match => {
+
+total += match.duration;
+
+});
+
+document.getElementById(
+"todayTime"
+).textContent =
+formatMinutes(total);
+
+
+
+/* MOYENNE */
+
+let average = 0;
+
+if (matches.length > 0) {
+
+average =
+Math.round(total / matches.length);
+
+}
+
+document.getElementById(
+"average"
+).textContent =
+formatMinutes(average);
+
+
+
+/* RECORD */
+
+let recordMatches = 0;
+
+let recordDuration = 0;
+
+
+
+Object.values(data).forEach(day => {
+
+if (day.length > recordMatches) {
+
+recordMatches = day.length;
+
+}
+
+day.forEach(match => {
+
+if (match.duration > recordDuration) {
+
+recordDuration =
+match.duration;
+
+}
+
+});
+
+});
+
+
+
+document.getElementById(
+"recordMatches"
+).textContent =
+recordMatches;
+
+
+
+document.getElementById(
+"recordDuration"
+).textContent =
+formatMinutes(recordDuration);
+
+
+
+/* SEMAINE */
+
+const week = document.getElementById("week");
+
+week.innerHTML = "";
+
+
+
+for (let i = 0; i < 7; i++) {
+
+const date = new Date();
+
+date.setDate(
+date.getDate() - i
+);
+
+const key =
+date.toISOString().split("T")[0];
+
+const dayMatches =
+data[key] || [];
+
+
+
+const day = document.createElement("div");
+
+day.className = "day";
+
+
+
+day.innerHTML =
+
+"<strong>📅 " +
+key +
+"</strong><br>" +
+
+"🎮 " +
+dayMatches.length +
+" match(s)";
+
+
+
+week.appendChild(day);
+
+}
+
+
+
+/* HISTORIQUE */
+
+const history =
+document.getElementById("history");
+
+history.innerHTML = "";
+
+
+
+if (matches.length === 0) {
+
+history.innerHTML =
+"Aucun match aujourd'hui.";
+
+return;
+
+}
+
+
+
+matches.forEach((match, index) => {
+
+const item =
+document.createElement("div");
+
+item.className = "day";
+
+item.innerHTML =
+
+"🎮 <strong>Match " +
+(index + 1) +
+"</strong><br>" +
+
+"🕐 Début : " +
+match.start +
+"<br>" +
+
+"🕐 Fin : " +
+match.end +
+"<br>" +
+
+"⏱️ Durée : " +
+formatMinutes(match.duration);
+
+
+
+history.appendChild(item);
+
+});
+
+}
+
+
+
+updateDashboard();
+
 
 </script>
 
